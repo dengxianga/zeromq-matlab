@@ -122,5 +122,58 @@ if TEST_TCP
     recv_data2 = char(recv_data');
     disp( recv_data2 ); 
 end
- 
- 
+
+%% NEW TESTS
+%% SUB and PUB, don't like this style
+
+%%  -->zm_sub.lua
+%publisher 
+
+clear all; 
+p2 = zmq( 'publish', 'tcp', 5561 ); 
+%%
+data2 = uint8(sprintf('%s: %s', 'robo_msg','222|11|12'));
+nbytes2 = zmq( 'send', p2, data2 );
+% = uint8(sprintf('%s', 'B222'));
+data2 = uint8(sprintf('%s: %s', 'A','111'));
+nbytes2 = zmq( 'send', p2, data2 );
+
+clear mex % close sockets and contexts
+
+%% <--zm_pub.lua
+% subscriber
+clear mex
+s2 = zmq( 'subscribe', 'tcp', 'localhost', 5562 );  
+%%
+for i=1:100
+    idx = zmq('poll', 1000);
+    if(numel(idx)==0)
+        disp('No data!')
+        break;
+    else
+
+        [recv_data,has_more] = zmq( 'receive', idx );
+        recv_data2 = char(recv_data');
+        disp( recv_data2 ); 
+    end 
+end
+
+%% <--> zm_subpub.lua
+clear all; 
+p2 = zmq( 'publish', 'tcp', 5561 ); 
+s2 = zmq( 'subscribe', 'tcp', 'localhost', 5562 );  
+%% ask for and get data...
+data2 = uint8(sprintf('%s: %s', 'robo_msg','222|11|12'));
+nbytes2 = zmq( 'send', p2, data2 );
+
+while 1
+    idx = zmq('poll', 1000);
+    if(numel(idx)~=0) 
+        [recv_data,has_more] = zmq( 'receive', idx );
+        recv_data2 = char(recv_data');
+        disp( recv_data2 ); 
+        break;
+    end 
+end
+%% finally close sockets
+clear mex
