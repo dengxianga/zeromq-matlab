@@ -1,5 +1,5 @@
 -- Pubsub envelope publisher
-
+--https://github.com/booksbyus/zguide/blob/master/examples/Lua/psenvpub.lua
 require "zhelpers"
 local zmq = require "lzmq"
 

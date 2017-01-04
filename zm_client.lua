@@ -1,3 +1,4 @@
+--http://zguide.zeromq.org/lua:client
 require "zhelpers"
 local zmq      = require "lzmq"
 local zthreads = require "lzmq.threads"

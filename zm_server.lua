@@ -1,3 +1,4 @@
+--https://github.com/booksbyus/zguide/blob/master/examples/Lua/psenvsub.lua
 require "zhelpers"
 local zmq      = require "lzmq"
 local zthreads = require "lzmq.threads"
@@ -16,7 +17,7 @@ while true do
     print("Received Hello [" .. request .. "]")
 
     --  Do some 'work'
-        s_sleep(10)
+        s_sleep(100)
 
     --  Send reply back to client
     socket:send("World")
