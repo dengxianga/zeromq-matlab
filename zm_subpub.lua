@@ -1,9 +1,7 @@
--- Pubsub envelope subscriber
---https://github.com/booksbyus/zguide/blob/master/examples/Lua/psenvsub.lua
 require "zhelpers"
 local zmq = require "lzmq"
 
--- Prepare our context and publisher
+
 local context = zmq.context()
 local subscriber, err = context:socket{zmq.SUB,
   subscribe = "robo_msg";
@@ -11,10 +9,16 @@ local subscriber, err = context:socket{zmq.SUB,
 }
 zassert(subscriber, err)
 
+local context = zmq.context()
+local publisher, err = context:socket{zmq.PUB, bind = "tcp://*:5562"}
+zassert(publisher, err)
+
+
 while true do
   -- Read envelope with address and message contents
   local address_contents = subscriber:recvx()
   printf ("[%s]\n", address_contents); 
+  publisher:sendx("robo_states 1|2|3|4")
 end
 
 --  We never get here but clean up anyhow
