@@ -10,7 +10,7 @@ else
     disp('0MQ IPC not supported on windows. Skipping IPC test...')
 end
 
-data1 = uint8('hello world!')';
+data1 = uint8('xxxxxx')';
 recv_data1 = [];
 
 disp('Sending data...')
@@ -21,38 +21,42 @@ else
 end
 
 fprintf('\nSent %d bytes on the ipc channel.\n',nbytes1);
+
+%%
 idx = zmq('poll', 1000);
-
 if(numel(idx)==0)
-	disp('No data!')
-end
-
-for c=1:numel(idx)
-    s_id = idx(c);
-    [recv_data,has_more] = zmq( 'receive', s_id );
-    fprintf('\nI have more? %d\n',has_more);
-	if ~ispc && s_id==s1
-		disp('ipc channel receiving...');
-        recv_data1 = char(recv_data);
-		disp( recv_data1' );
-	end
-end
-
-if ispc
-    disp('IPC test skipped!')
+    disp('No data!')
 else
-    if numel(data1)==numel(recv_data1) && sum(recv_data1==data1)==numel(data1)
-        disp('IPC PASS');
+    
+    for c=1:numel(idx)
+        s_id = idx(c);
+        [recv_data,has_more] = zmq( 'receive', s_id );
+        fprintf('\nI have more? %d\n',has_more);
+        if ~ispc && s_id==s1
+            disp('ipc channel receiving...');
+            recv_data1 = char(recv_data);
+            disp( recv_data1' );
+        end
+    end
+    
+    if ispc
+        disp('IPC test skipped!')
     else
-        disp('IPC FAIL');
+        if numel(data1)==numel(recv_data1) && sum(recv_data1==data1)==numel(data1)
+            disp('IPC PASS');
+        else
+            disp('IPC FAIL');
+        end
     end
 end
-
+%%
+clear all;
+TEST_TCP = true;
 if TEST_TCP
     cnt = 1;
     disp('Setting up TCP')
-    s2 = zmq( 'subscribe', 'tcp', '127.0.0.1', 43210 );
-    p2 = zmq( 'publish', 'tcp', 43210 );
+    s2 = zmq( 'subscribe', 'tcp', 'localhost', 5562 );
+    p2 = zmq( 'publish', 'tcp', 5562 );
     data2 = uint8(sprintf('#%d: %d', cnt, randi(9)));
     zmq('poll', 1000);
     nbytes2 = zmq( 'send', p2, data2 );
@@ -70,6 +74,53 @@ if TEST_TCP
     clear cnt;
 end
 
-%if ~ispc
-%    exit
-%end
+%%
+clear all; 
+p2 = zmq( 'publish', 'tcp', 5561 );
+cnt = 1;
+%%
+data2 = uint8(sprintf('%s: %s', 'robo_msg','222|11|12'));
+nbytes2 = zmq( 'send', p2, data2 );
+% = uint8(sprintf('%s', 'B222'));
+data2 = uint8(sprintf('%s: %s', 'A','111'));
+nbytes2 = zmq( 'send', p2, data2 );
+%%
+clear all;
+TEST_TCP = true;
+if TEST_TCP
+    cnt = 1;
+    disp('Setting up TCP')
+    s2 = zmq( 'subscribe', 'tcp', 'localhost', 5562 );
+    p2 = zmq( 'publish', 'tcp', 5562 );
+    data2 = uint8(sprintf('#%d: %d', cnt, randi(9)));
+    zmq('poll', 1000);
+    nbytes2 = zmq( 'send', p2, data2 );
+    idx = zmq('poll', 1000);
+    [recv_data,has_more] = zmq( 'receive', idx );
+    disp( 'tcp channel receiving...' );
+    recv_data2 = char(recv_data');
+    disp( recv_data2 );
+    
+    if numel(data2)==numel(recv_data2) && sum(recv_data2==data2)==numel(data2)
+        disp('TCP PASS');
+    else
+        disp('TCP FAIL');
+    end
+    clear cnt;
+end
+
+%%
+clear all;
+TEST_TCP = true;
+if TEST_TCP
+    cnt = 1;
+    disp('Setting up TCP')
+    s2 = zmq( 'subscribe', 'tcp', 'localhost', 5561 );  
+    idx = zmq('poll', 1000);
+    [recv_data,has_more] = zmq( 'receive', idx );
+    disp( 'tcp channel receiving...' );
+    recv_data2 = char(recv_data');
+    disp( recv_data2 ); 
+end
+ 
+ 
